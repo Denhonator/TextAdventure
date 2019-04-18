@@ -17,30 +17,61 @@ Game::~Game()
 
 std::string Game::ProcessCommand(std::string input)
 {
+	while (input[input.size() - 1] == ' ')
+		input = input.substr(0, input.size() - 1);
+	std::string arg = "";
+	if (input.find(" ") != std::string::npos) {
+		arg = input.substr(input.find(" ")+1);
+		input = input.substr(0, input.find(" "));
+	}
 	if (input == "player")
 		return PrintUnit(&players.at(curPlayer));
-	else if (input == "tile")
-		return PrintTile(players.at(curPlayer).loc.tile);
-	else if (input == "look right") {
-		Location l = players.at(curPlayer).loc;
-		if (l.x < 9) {
-			return PrintTile(&l.area->tiles[l.x + 1 + l.y * 10]);
-		}
-		else {
-			return PrintTile(nullptr);
-		}
+	if (input == "look") {
+		return LookTile(arg);
 	}
 	return "Invalid command";
+}
+
+std::string Game::LookTile(std::string arguments) {
+	if (arguments == "") {
+		return PrintTile(players.at(curPlayer).loc.tile);
+	}
+	Location l = players.at(curPlayer).loc;
+	bool validArg = false;
+	if (arguments == "east") {
+		validArg = true;
+		l.x += 1;
+	}
+	else if (arguments == "west") {
+		validArg = true;
+		l.x -= 1;
+	}
+	else if (arguments == "north") {
+		validArg = true;
+		l.y -= 1;
+	}
+	else if (arguments == "south") {
+		validArg = true;
+		l.y += 1;
+	}
+	if (!validArg)
+		return "Invalid argument";
+	if(l.x>=0&&l.x<10&&l.y>=0&&l.y<10)
+		return PrintTile(&l.area->tiles[l.x + l.y * 10]);
+	return PrintTile(&l.area->defaultTile);
 }
 
 Area CreateArea(std::string name) {
 	Area a;
 	a.name = name;
 	for (unsigned int i = 0; i < AreaSize; i++) {
-		a.tiles[i].fluff = "Nothing noteworthy to see";
+		a.tiles[i].fluff = "Nothing noteworthy to see.";
 		a.tiles[i].seen = false;
 		a.tiles[i].walkable = true;
 	}
+	a.defaultTile.fluff = "This is a default tile, which surround the area.";
+	a.defaultTile.seen = true;
+	a.defaultTile.walkable = false;
 	return a;
 }
 

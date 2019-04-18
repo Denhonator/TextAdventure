@@ -10,4 +10,7 @@ public:
 	std::vector<Unit> players;
 	std::vector<Area> areas;
 	unsigned int curPlayer = 0;
+
+private:
+	std::string LookTile(std::string arguments = "");
 };

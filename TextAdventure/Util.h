@@ -34,6 +34,7 @@ struct Location {
 struct Area {
 	std::string name;
 	Tile tiles[AreaSize];
+	Tile defaultTile;
 };
 
 struct Unit {
