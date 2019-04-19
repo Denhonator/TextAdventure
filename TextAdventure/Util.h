@@ -21,7 +21,7 @@ struct Item {
 struct Tile {
 	std::string fluff;
 	std::vector<Item> items;
-	std::vector<Unit> enemies;
+	std::vector<unsigned int> units;
 	bool seen, walkable;
 };
 
@@ -43,4 +43,5 @@ struct Unit {
 	Stats cur;
 	std::vector<Item> inventory;
 	Location loc;
+	char type;
 };
