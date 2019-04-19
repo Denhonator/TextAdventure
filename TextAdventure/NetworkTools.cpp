@@ -7,7 +7,7 @@ Server::Server()
 		printf("WSAStartup failed with error: %d\n", iResult);
 	}
 	clientService.sin_family = AF_INET;
-	clientService.sin_addr.s_addr = inet_addr("127.0.0.1");
+	clientService.sin_addr.s_addr = inet_addr("1.1.1.1");
 	clientService.sin_port = htons(DEFAULT_PORT);
 
 	iSendResult = 0;
@@ -20,6 +20,7 @@ Server::~Server()
 
 int __cdecl Server::CreateServer()
 {
+	clientService.sin_addr.s_addr = inet_addr("127.0.0.1");
 	ListenSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (ListenSocket == INVALID_SOCKET) {
 		printf("socket failed with error: %ld\n", WSAGetLastError());
