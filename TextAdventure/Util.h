@@ -2,8 +2,12 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <algorithm>
 
 #define AreaSize 100
+constexpr auto ItemIndex = 13;
+constexpr auto StatIndex = 5;
+#define tstr std::to_string
 
 struct Location;
 struct Area;
@@ -15,14 +19,15 @@ struct Stats {
 
 struct Item {
 	std::string name, equipType;
-	Stats use, equip;
+	Stats use{ 0,0,0,0,0,0 }, equip{ 0,0,0,0,0,0 };
+	int value = 0;
 };
 
 struct Tile {
 	std::string fluff;
 	std::vector<Item> items;
 	std::vector<unsigned int> units;
-	bool seen, walkable;
+	bool seen = false, walkable = true;
 };
 
 struct Location {
