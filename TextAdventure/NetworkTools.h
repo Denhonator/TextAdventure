@@ -14,7 +14,7 @@
 // #pragma comment (lib, "Mswsock.lib")
 #pragma warning(disable:4996)
 
-#define DEFAULT_BUFLEN 512
+#define DEFAULT_BUFLEN 1024
 #define DEFAULT_PORT 27015
 
 class Server {
