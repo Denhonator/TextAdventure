@@ -106,7 +106,7 @@ std::string PrintTile(Tile* tile) {
 	if (tile == nullptr)
 		return "You can not go this way";
 	std::string s = "";
-	if (tile->fluff.length() > 1) {
+	if (tile->fluff.size() > 1) {
 		s = tile->fluff + "\n";
 	}
 	if (tile->seen) {

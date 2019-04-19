@@ -26,9 +26,9 @@ public:
 	std::string Receive();
 	int __cdecl Send(std::string mes);
 	int __cdecl Shutdown();
-	bool isConnected() { return connected; };
+	char isConnected() { return connected; };
 private:
-	bool connected;
+	char connected;
 	WSADATA wsaData;
 	int iResult;
 

@@ -11,7 +11,7 @@ Server::Server()
 	clientService.sin_port = htons(DEFAULT_PORT);
 
 	iSendResult = 0;
-	connected = false;
+	connected = 0;
 }
 
 Server::~Server()
@@ -52,7 +52,7 @@ int __cdecl Server::CreateServer()
 	}
 
 	closesocket(ListenSocket);
-	connected = true;
+	connected = 's';
 	return 0;
 }
 
@@ -78,7 +78,7 @@ int __cdecl Server::CreateClient(std::string IP)
 		WSACleanup();
 		return 1;
 	}
-	connected = true;
+	connected = 'c';
 	return 0;
 }
 
@@ -89,7 +89,7 @@ std::string Server::Receive()
 	if(iResult>0)
 		return recvbuf;
 	Shutdown();
-	return "Disconnected";
+	return ":Disconnected";
 }
 
 int __cdecl Server::Send(std::string mes)
