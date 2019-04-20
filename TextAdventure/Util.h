@@ -4,7 +4,7 @@
 #include <iostream>
 #include <algorithm>
 
-#define AreaSize 100
+constexpr auto AreaSize = 100;
 constexpr auto ItemIndex = 13;
 constexpr auto StatIndex = 5;
 #define tstr std::to_string
@@ -25,28 +25,29 @@ struct Item {
 
 struct Tile {
 	std::string fluff;
-	std::vector<Item> items;
-	std::vector<unsigned int> units;
-	bool seen = false, walkable = true;
+	bool walkable = true;
 };
 
 struct Location {
 	int x, y;
-	Area* area;
-	Tile* tile;
+	unsigned int area;
+	bool operator==(Location a) {
+		return a.x == x && a.y == y && a.area == area;
+	}
 };
 
 struct Area {
 	std::string name;
-	Tile tiles[AreaSize];
-	Tile defaultTile;
+	unsigned int tiles[AreaSize];
+	bool seenTiles[AreaSize];
+	unsigned int defaultTile;
 };
 
 struct Unit {
 	std::string name;
 	Stats max;
 	Stats cur;
-	std::vector<Item> inventory;
+	std::vector<unsigned int> inventory;
 	Location loc;
 	char type;
 };
