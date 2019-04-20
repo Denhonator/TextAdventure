@@ -19,8 +19,8 @@ struct Stats {
 
 struct Item {
 	std::string name, equipType;
-	Stats use{ 0,0,0,0,0,0 }, equip{ 0,0,0,0,0,0 };
 	int value = 0;
+	Stats use{ 0,0,0,0,0,0 }, equip{ 0,0,0,0,0,0 };
 };
 
 struct Tile {
@@ -38,16 +38,16 @@ struct Location {
 
 struct Area {
 	std::string name;
+	unsigned int defaultTile;
 	unsigned int tiles[AreaSize];
 	bool seenTiles[AreaSize];
-	unsigned int defaultTile;
 };
 
 struct Unit {
 	std::string name;
 	Stats max;
 	Stats cur;
-	std::vector<unsigned int> inventory;
 	Location loc;
 	char type;
+	std::vector<unsigned int> inventory;
 };

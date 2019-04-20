@@ -1,4 +1,6 @@
 #include "Resources.h"
+#define stats st.hp>>st.mp>>st.strength>>st.magic>>st.agility>>st.defense
+#define stats2 st2.hp>>st2.mp>>st2.strength>>st2.magic>>st2.agility>>st2.defense
 
 std::vector<Unit> Resources::units;
 std::vector<Area> Resources::areas;
@@ -7,7 +9,19 @@ std::vector<Item> Resources::items;
 
 void Resources::LoadUnits()
 {
-	units.push_back(CreatePlayer("player"));
+	std::ifstream file;
+	Unit u;
+	Stats st, st2;
+	file.open("Resources/units.txt");
+	if (file) {
+		while (file >> u.name >> stats >> stats2 >> u.loc.x >> u.loc.y >> u.loc.area >> u.type) {
+			u.cur = st;
+			u.max = st2;
+			units.push_back(u);
+		}
+	}
+	else
+		std::cout << "Failed to read Resources/units.txt" << std::endl;
 }
 
 void Resources::LoadAreas()
@@ -17,8 +31,17 @@ void Resources::LoadAreas()
 
 void Resources::LoadTiles()
 {
-	tiles.push_back(Tile{ "This is a default tile, edge of the area.",false });
-	tiles.push_back(Tile{ "Noting noteworthy to see here.",true });
+	std::ifstream file;
+	Tile t;
+	file.open("Resources/tiles.txt");
+	if (file) {
+		while (file >> t.fluff >> t.walkable) {
+			std::replace(t.fluff.begin(), t.fluff.end(), '_', ' ');
+			tiles.push_back(t);
+		}
+	}
+	else
+		std::cout << "Failed to read Resources/tiles.txt" << std::endl;
 }
 
 void Resources::LoadItems()
