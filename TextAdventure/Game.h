@@ -8,7 +8,7 @@ public:
 	Game();
 	~Game();
 	std::string ProcessCommand(std::string input, int player=0);
-	void AddPlayer(std::string name, Location loc = Location{ 0,0,0 });
+	void AddPlayer(unsigned int index, std::string name = "", Location loc = Location{ 0,0,0 });
 	bool AddUnitTo(Location loc, unsigned int index = 0);
 	std::vector<Unit> units;
 	std::vector<Area> areas;
@@ -21,5 +21,5 @@ private:
 	std::string LookTile(std::string arguments = "");
 	bool Move(std::string arguments = "", unsigned int index = 0);
 	std::string PrintTile(Location loc);
-	std::string PrintUnit(Unit* unit);
+	std::string PrintUnit(std::string arguments = "", int index = -1);
 };

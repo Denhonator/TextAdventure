@@ -15,6 +15,9 @@ void Resources::LoadUnits()
 	file.open("Resources/units.txt");
 	if (file) {
 		while (file >> u.name >> stats >> stats2 >> u.loc.x >> u.loc.y >> u.loc.area >> u.type) {
+			int item;
+			while (file >> item)
+				u.inventory.push_back(item);
 			u.cur = st;
 			u.max = st2;
 			units.push_back(u);
@@ -46,6 +49,20 @@ void Resources::LoadTiles()
 
 void Resources::LoadItems()
 {
+	std::ifstream file;
+	Item i;
+	Stats st, st2;
+	file.open("Resources/items.txt");
+	if (file) {
+		while (file >> i.name >> i.fluff >> i.equipType >> stats >> stats2 >> i.value) {
+			std::replace(i.fluff.begin(), i.fluff.end(), '_', ' ');
+			i.use = st;
+			i.equip = st2;
+			items.push_back(i);
+		}
+	}
+	else
+		std::cout << "Failed to read Resources/items.txt" << std::endl;
 }
 
 Area Resources::CreateArea(std::string name) {

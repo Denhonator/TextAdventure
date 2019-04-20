@@ -9,8 +9,7 @@ Game::Game()
 	tiles = Resources::tiles;
 	areas = Resources::areas;
 	items = Resources::items;
-	units = Resources::units;
-	AddPlayer("player0");
+	AddPlayer(0);
 }
 
 Game::~Game()
@@ -28,7 +27,7 @@ std::string Game::ProcessCommand(std::string input, int player)
 		input = input.substr(0, input.find(" "));
 	}
 	if (input == "player")
-		return PrintUnit(&units.at(curPlayer));
+		return PrintUnit(arg);
 	if (input == "look") {
 		return LookTile(arg);
 	}
@@ -40,10 +39,13 @@ std::string Game::ProcessCommand(std::string input, int player)
 	return "Invalid command";
 }
 
-void Game::AddPlayer(std::string name, Location loc)
+void Game::AddPlayer(unsigned int index, std::string name, Location loc)
 {
 	Unit u = Resources::units.at(0);
-	u.name = name;
+	if (name != "")
+		u.name = name;
+	else
+		u.name += std::to_string(players);
 	units.insert(units.begin()+players,u);
 	AddUnitTo(loc, players);
 	players++;
@@ -116,14 +118,28 @@ bool Game::Move(std::string arguments, unsigned int index)
 	return false;
 }
 
-std::string Game::PrintUnit(Unit* unit) {
-	return "Name: " + unit->name + "\n"
-		+ std::to_string(unit->cur.hp) + "/" + std::to_string(unit->max.hp) + " HP"
-		+ "      Strength: " + std::to_string(unit->cur.strength) + "\n"
-		+ std::to_string(unit->cur.mp) + "/" + std::to_string(unit->max.mp) + " MP"
-		+ "      Magic:    " + std::to_string(unit->cur.magic) + "\n"
-		+ "              Defense:  " + std::to_string(unit->cur.defense) + "\n"
-		+ "              Agility:  " + std::to_string(unit->cur.agility);
+std::string Game::PrintUnit(std::string arguments, int index) {
+	index = index >= 0 ? index : curPlayer;
+	Unit* unit = &units.at(index);
+	if (arguments == "stats") {
+		return "Name: " + unit->name + "\n"
+			+ std::to_string(unit->cur.hp) + "/" + std::to_string(unit->max.hp) + " HP"
+			+ "      Strength: " + std::to_string(unit->cur.strength) + "\n"
+			+ std::to_string(unit->cur.mp) + "/" + std::to_string(unit->max.mp) + " MP"
+			+ "      Magic:    " + std::to_string(unit->cur.magic) + "\n"
+			+ "              Defense:  " + std::to_string(unit->cur.defense) + "\n"
+			+ "              Agility:  " + std::to_string(unit->cur.agility);
+	}
+	if (arguments == "items") {
+		std::string buf = "";
+		for (unsigned int i = 0; i < unit->inventory.size(); i++) {
+			if (i > 0)
+				buf += "\n";
+			buf += items.at(unit->inventory.at(i)).name + " - " + items.at(unit->inventory.at(i)).fluff;
+		}
+		return buf;
+	}
+	return "Arguments: stats, items";
 }
 
 std::string Game::PrintTile(Location loc) {

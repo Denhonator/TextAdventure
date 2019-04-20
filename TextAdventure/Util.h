@@ -18,9 +18,9 @@ struct Stats {
 };
 
 struct Item {
-	std::string name, equipType;
-	int value = 0;
+	std::string name, fluff, equipType;
 	Stats use{ 0,0,0,0,0,0 }, equip{ 0,0,0,0,0,0 };
+	int value = 0;
 };
 
 struct Tile {
