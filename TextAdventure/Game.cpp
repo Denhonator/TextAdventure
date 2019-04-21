@@ -6,9 +6,7 @@ Game::Game()
 	Resources::LoadAreas();
 	Resources::LoadItems();
 	Resources::LoadUnits();
-	tiles = Resources::tiles;
 	areas = Resources::areas;
-	items = Resources::items;
 	AddPlayer(0);
 }
 
@@ -118,28 +116,71 @@ bool Game::Move(std::string arguments, unsigned int index)
 	return false;
 }
 
+std::string Game::PrintStats(Stats stats)
+{
+	std::string hp = std::to_string(stats.hp) + " HP";
+	for (unsigned int i = hp.size(); i < 5; i++)
+		hp += ' ';
+	std::string mp = std::to_string(stats.mp) + " MP";
+	for (unsigned int i = mp.size(); i < 5; i++)
+		mp += ' ';
+	return hp + "    Strength: " + std::to_string(stats.strength) + "\n"
+		 + mp + "    Magic:    " + std::to_string(stats.magic) + "\n"
+		 + "         Defense:  " + std::to_string(stats.defense) + "\n"
+		 + "         Agility:  " + std::to_string(stats.agility);
+}
+
+std::string Game::PrintItem(Item* item, bool detail)
+{
+	std::string buf = "";
+	buf += item->name;
+	if (item->fluff != "-")
+		buf += " - " + item->fluff;
+	if (detail)
+		buf += "\n" + PrintStats(item->stats);
+	return buf;
+}
+
 std::string Game::PrintUnit(std::string arguments, int index) {
+	std::string arg2="";
+	std::stringstream ss;
+	ss << arguments;
+	ss >> arguments >> arg2;
+	bool detail = arg2 != "";
 	index = index >= 0 ? index : curPlayer;
 	Unit* unit = &units.at(index);
 	if (arguments == "stats") {
-		return "Name: " + unit->name + "\n"
-			+ std::to_string(unit->cur.hp) + "/" + std::to_string(unit->max.hp) + " HP"
-			+ "      Strength: " + std::to_string(unit->cur.strength) + "\n"
-			+ std::to_string(unit->cur.mp) + "/" + std::to_string(unit->max.mp) + " MP"
-			+ "      Magic:    " + std::to_string(unit->cur.magic) + "\n"
-			+ "              Defense:  " + std::to_string(unit->cur.defense) + "\n"
-			+ "              Agility:  " + std::to_string(unit->cur.agility);
+		return "Name: " + unit->name + "\n" + PrintStats(unit->stats);
 	}
+	std::string buf = "";
 	if (arguments == "items") {
-		std::string buf = "";
 		for (unsigned int i = 0; i < unit->inventory.size(); i++) {
-			if (i > 0)
-				buf += "\n";
-			buf += items.at(unit->inventory.at(i)).name + " - " + items.at(unit->inventory.at(i)).fluff;
+			Item* item = &Resources::items.at(unit->inventory.at(i));
+			if (item->type == "consume" && (!detail||item->name==arg2)) {
+				if (buf != "")
+					buf += "\n";
+				buf += PrintItem(item,detail);
+			}
 		}
 		return buf;
 	}
-	return "Arguments: stats, items";
+	if (arguments == "equipment") {
+		std::vector<std::string> toFind = {"feet","legs","torso","hands","head","accessory"};
+		for (unsigned int i = 0; i < unit->inventory.size(); i++) {
+			Item* item = &Resources::items.at(unit->inventory.at(i));
+			std::vector<std::string>::iterator iter = std::find(toFind.begin(), toFind.end(), item->type);
+			if (iter!=toFind.end()) {
+				toFind.erase(iter);
+				if (!detail || item->name == arg2) {
+					if (buf != "")
+						buf += "\n";
+					buf += PrintItem(item,detail);
+				}
+			}
+		}
+		return buf;
+	}
+	return "Arguments: stats, items, equipment (+name for details)";
 }
 
 std::string Game::PrintTile(Location loc) {
@@ -147,9 +188,9 @@ std::string Game::PrintTile(Location loc) {
 	Area a = areas.at(loc.area);
 	bool found = false;
 	if (loc.x > 9 || loc.x < 0 || loc.y>9 || loc.y < 0)
-		tile = &tiles.at(a.defaultTile);
+		tile = &Resources::tiles.at(a.defaultTile);
 	else {
-		tile = &tiles.at(a.tiles[loc.x + loc.y * 10]);
+		tile = &Resources::tiles.at(a.tiles[loc.x + loc.y * 10]);
 		found = true;
 	}
 	std::string s = "";

@@ -1,6 +1,5 @@
 #include "Resources.h"
-#define stats st.hp>>st.mp>>st.strength>>st.magic>>st.agility>>st.defense
-#define stats2 st2.hp>>st2.mp>>st2.strength>>st2.magic>>st2.agility>>st2.defense
+#define StatStream st.hp>>st.mp>>st.strength>>st.magic>>st.agility>>st.defense
 
 std::vector<Unit> Resources::units;
 std::vector<Area> Resources::areas;
@@ -11,15 +10,14 @@ void Resources::LoadUnits()
 {
 	std::ifstream file;
 	Unit u;
-	Stats st, st2;
+	Stats st;
 	file.open("Resources/units.txt");
 	if (file) {
-		while (file >> u.name >> stats >> stats2 >> u.loc.x >> u.loc.y >> u.loc.area >> u.type) {
+		while (file >> u.name >> StatStream >> u.loc.x >> u.loc.y >> u.loc.area >> u.type) {
 			int item;
 			while (file >> item)
 				u.inventory.push_back(item);
-			u.cur = st;
-			u.max = st2;
+			u.stats = st;
 			units.push_back(u);
 		}
 	}
@@ -54,10 +52,8 @@ void Resources::LoadItems()
 	Stats st, st2;
 	file.open("Resources/items.txt");
 	if (file) {
-		while (file >> i.name >> i.fluff >> i.equipType >> stats >> stats2 >> i.value) {
-			std::replace(i.fluff.begin(), i.fluff.end(), '_', ' ');
-			i.use = st;
-			i.equip = st2;
+		while (file >> i.name >> i.fluff >> i.type >> StatStream >> i.value) {
+			i.stats = st;
 			items.push_back(i);
 		}
 	}
@@ -79,13 +75,12 @@ Area Resources::CreateArea(std::string name) {
 Unit Resources::CreatePlayer(std::string name) {
 	Unit u;
 	u.name = name;
-	u.max.hp = 20;
-	u.max.mp = 20;
-	u.max.strength = 20;
-	u.max.magic = 20;
-	u.max.agility = 20;
-	u.max.defense = 20;
-	u.cur = u.max;
+	u.stats.hp = 20;
+	u.stats.mp = 20;
+	u.stats.strength = 20;
+	u.stats.magic = 20;
+	u.stats.agility = 20;
+	u.stats.defense = 20;
 	u.type = 'p';
 	return u;
 }

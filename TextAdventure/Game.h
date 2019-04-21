@@ -12,14 +12,14 @@ public:
 	bool AddUnitTo(Location loc, unsigned int index = 0);
 	std::vector<Unit> units;
 	std::vector<Area> areas;
-	std::vector<Tile> tiles;
-	std::vector<Item> items;
 	unsigned int curPlayer = 0;
 
 private:
 	unsigned int players = 0;
 	std::string LookTile(std::string arguments = "");
 	bool Move(std::string arguments = "", unsigned int index = 0);
+	std::string PrintStats(Stats stats);
+	std::string PrintItem(Item* item, bool detail = false);
 	std::string PrintTile(Location loc);
 	std::string PrintUnit(std::string arguments = "", int index = -1);
 };

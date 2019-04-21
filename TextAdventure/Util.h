@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <string>
+#include <sstream>
 #include <iostream>
 #include <algorithm>
 
@@ -18,8 +19,8 @@ struct Stats {
 };
 
 struct Item {
-	std::string name, fluff, equipType;
-	Stats use{ 0,0,0,0,0,0 }, equip{ 0,0,0,0,0,0 };
+	std::string name, fluff, type;
+	Stats stats { 0,0,0,0,0,0 };
 	int value = 0;
 };
 
@@ -38,16 +39,15 @@ struct Location {
 
 struct Area {
 	std::string name;
-	unsigned int defaultTile;
+	unsigned int defaultTile{ 0 };
 	unsigned int tiles[AreaSize];
 	bool seenTiles[AreaSize];
 };
 
 struct Unit {
 	std::string name;
-	Stats max;
-	Stats cur;
-	Location loc;
-	char type;
+	Stats stats{ 20,20,20,20,20,20 };
+	Location loc{ 0,0,0 };
+	char type = 'p';
 	std::vector<unsigned int> inventory;
 };
