@@ -4,6 +4,8 @@
 #include <sstream>
 #include <iostream>
 #include <algorithm>
+#include <random>
+#include <time.h>
 
 constexpr auto AreaSize = 100;
 constexpr auto ItemIndex = 13;
@@ -19,7 +21,7 @@ struct Stats {
 };
 
 struct Item {
-	std::string name, fluff, type;
+	std::string name, fluff, type, rarity;
 	Stats stats { 0,0,0,0,0,0 };
 	int value = 0;
 };
@@ -49,6 +51,6 @@ struct Unit {
 	Stats stats{ 20,20,20,20,20,20 };
 	Location loc{ 0,0,0 };
 	char type = 'p';
-	int equipment[6];
-	std::pair<unsigned int, int> inventory[6];
+	std::string equipment[6];
+	std::pair<unsigned int, std::string> inventory[6];
 };

@@ -7,7 +7,8 @@ Game::Game()
 	Resources::LoadItems();
 	Resources::LoadUnits();
 	areas = Resources::areas;
-	AddPlayer(0);
+	AddUnit(0, 'p', Location{ 0,0,0 },"player1");
+	AddUnit(0, 'e', Location{ 1,0,0 },"enemy");
 }
 
 Game::~Game()
@@ -37,16 +38,19 @@ std::string Game::ProcessCommand(std::string input, int player)
 	return "Invalid command";
 }
 
-void Game::AddPlayer(unsigned int index, std::string name, Location loc)
+void Game::AddUnit(unsigned int index, char type, Location loc, std::string name)
 {
-	Unit u = Resources::units.at(0);
-	if (name != "")
-		u.name = name;
-	else
-		u.name += std::to_string(players);
-	units.insert(units.begin()+players,u);
-	AddUnitTo(loc, players);
-	players++;
+	Unit u = Resources::units.at(index);
+	u.type = type;
+	if (u.type == 'p') {
+		units.insert(units.begin() + players, u);
+		AddUnitTo(loc, players);
+		players++;
+	}
+	else {
+		units.push_back(u);
+		AddUnitTo(loc, units.size() - 1);
+	}
 }
 
 bool Game::AddUnitTo(Location loc, unsigned int index)
@@ -131,10 +135,10 @@ std::string Game::PrintStats(Stats stats, char type)
 			+ "         Agility:  " + std::to_string(stats.agility);
 	}
 	if (type == 'e') {
-		return "    Strength: " + std::to_string(stats.strength) + "\n"
-			 + "    Magic:    " + std::to_string(stats.magic) + "\n"
-			 + "    Defense:  " + std::to_string(stats.defense) + "\n"
-			 + "    Agility:  " + std::to_string(stats.agility);
+		return "Strength: " + std::to_string(stats.strength) + "\n"
+			 + "Magic:    " + std::to_string(stats.magic) + "\n"
+			 + "Defense:  " + std::to_string(stats.defense) + "\n"
+			 + "Agility:  " + std::to_string(stats.agility);
 	}
 	if (type == 'i') {
 		return hp + " " + mp;
@@ -170,8 +174,10 @@ std::string Game::PrintUnit(std::string arguments, int index) {
 			if (i > 0 && (unit->inventory[i].first > 0 || !detail))
 				buf += "\n";
 			if (unit->inventory[i].first > 0) {
-				Item* item = &Resources::items.at(unit->inventory[i].second);
-				if (!detail || item->name == arg2)
+				Item* item = Resources::GetItem(unit->inventory[i].second, "", "use");
+				if (item == nullptr)
+					buf += '(' + std::to_string(unit->inventory[i].first) + ") " + unit->inventory[i].second + " (Not found)";
+				else if (!detail || item->name == arg2)
 					buf += '('+std::to_string(unit->inventory[i].first) + ") " + PrintItem(item, detail);
 			}
 			else if(!detail)
@@ -182,15 +188,17 @@ std::string Game::PrintUnit(std::string arguments, int index) {
 	if (arguments == "equipment") {
 		detail = detail ? 'e' : 0;
 		for (unsigned int i = 0; i < sizeof(unit->equipment)/sizeof(unit->equipment[0]); i++) {
-			if (i > 0 && (unit->equipment[i] >= 0 || !detail))
+			Item* item = Resources::GetItem(unit->equipment[i], "", "equipment");
+			if (i > 0 && (unit->equipment[i].size()>1 || !detail))
 				buf += "\n";
-			if (unit->equipment[i] >= 0) {
-				Item* item = &Resources::items.at(unit->equipment[i]);
-				if (!detail || item->name == arg2)
-					buf += PrintItem(item, detail);
+			if (item == nullptr) {
+				if(unit->equipment[i].size()>1)
+					buf += unit->equipment[i] + " (Not found)";
+				else if(!detail)
+					buf += "Empty slot";
 			}
-			else if(!detail)
-				buf += "Empty slot";
+			else if (!detail || item->name == arg2)
+				buf += PrintItem(item, detail);
 		}
 		return buf;
 	}

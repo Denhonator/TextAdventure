@@ -12,6 +12,7 @@ public:
 	static void LoadAreas();
 	static void LoadTiles();
 	static void LoadItems();
+	static Item* GetItem(std::string name = "", std::string rarity = "", std::string type = "");
 private:
 	static Unit CreatePlayer(std::string name);
 	static Area CreateArea(std::string name);

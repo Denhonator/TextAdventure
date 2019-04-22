@@ -16,7 +16,21 @@ void Resources::LoadUnits()
 	Stats st;
 	file.open("Resources/units.txt");
 	if (file) {
-		while (file >> u.name >> StatStream >> u.loc.x >> u.loc.y >> u.loc.area >> u.type >> EquipmentStream >> InventoryStream) {
+		while (file >> u.name >> StatStream >> u.loc.x >> u.loc.y >> u.loc.area >> EquipmentStream >> InventoryStream) {
+			for (unsigned int i = 0; i < sizeof(u.equipment) / sizeof(u.equipment[0]); i++) {
+				if (u.equipment[i].size()>1 && GetItem(u.equipment[i],"","equipment") == nullptr) {
+					Item* item = GetItem("", u.equipment[i], "equipment");
+					if (item != nullptr)
+						u.equipment[i] = item->name;
+				}
+			}
+			for (unsigned int i = 0; i < sizeof(u.inventory) / sizeof(u.inventory[0]); i++) {
+				if (u.inventory[i].first > 0 && GetItem(u.inventory[i].second) == nullptr) {
+					Item* item = GetItem("", u.inventory[i].second, "use");
+					if (item != nullptr)
+						u.inventory[i].second = item->name;
+				}
+			}
 			u.stats = st;
 			units.push_back(u);
 		}
@@ -52,13 +66,27 @@ void Resources::LoadItems()
 	Stats st, st2;
 	file.open("Resources/items.txt");
 	if (file) {
-		while (file >> i.name >> i.fluff >> i.type >> StatStream >> i.value) {
+		while (file >> i.name >> i.fluff >> i.type >> i.rarity >> StatStream >> i.value) {
 			i.stats = st;
 			items.push_back(i);
 		}
 	}
 	else
 		std::cout << "Failed to read Resources/items.txt" << std::endl;
+}
+
+Item* Resources::GetItem(std::string name, std::string rarity, std::string type)
+{
+	std::vector<Item*> viable;
+	for (unsigned int i = 0; i < items.size(); i++) {
+		if ((name == "" || items.at(i).name == name) && (rarity == "" || items.at(i).rarity == rarity) && (type == "" || items.at(i).type == type)) {
+			viable.push_back(&items.at(i));
+		}
+	}
+	if (viable.size() > 0) {
+		return viable.at(rand() % viable.size());
+	}
+	return nullptr;
 }
 
 Area Resources::CreateArea(std::string name) {
