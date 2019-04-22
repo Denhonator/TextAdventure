@@ -116,7 +116,7 @@ bool Game::Move(std::string arguments, unsigned int index)
 	return false;
 }
 
-std::string Game::PrintStats(Stats stats)
+std::string Game::PrintStats(Stats stats, char type)
 {
 	std::string hp = std::to_string(stats.hp) + " HP";
 	for (unsigned int i = hp.size(); i < 5; i++)
@@ -124,20 +124,31 @@ std::string Game::PrintStats(Stats stats)
 	std::string mp = std::to_string(stats.mp) + " MP";
 	for (unsigned int i = mp.size(); i < 5; i++)
 		mp += ' ';
-	return hp + "    Strength: " + std::to_string(stats.strength) + "\n"
-		 + mp + "    Magic:    " + std::to_string(stats.magic) + "\n"
-		 + "         Defense:  " + std::to_string(stats.defense) + "\n"
-		 + "         Agility:  " + std::to_string(stats.agility);
+	if (type == 'u') {
+		return hp + "    Strength: " + std::to_string(stats.strength) + "\n"
+			+ mp + "    Magic:    " + std::to_string(stats.magic) + "\n"
+			+ "         Defense:  " + std::to_string(stats.defense) + "\n"
+			+ "         Agility:  " + std::to_string(stats.agility);
+	}
+	if (type == 'e') {
+		return "    Strength: " + std::to_string(stats.strength) + "\n"
+			 + "    Magic:    " + std::to_string(stats.magic) + "\n"
+			 + "    Defense:  " + std::to_string(stats.defense) + "\n"
+			 + "    Agility:  " + std::to_string(stats.agility);
+	}
+	if (type == 'i') {
+		return hp + " " + mp;
+	}
 }
 
-std::string Game::PrintItem(Item* item, bool detail)
+std::string Game::PrintItem(Item* item, char type)
 {
 	std::string buf = "";
 	buf += item->name;
 	if (item->fluff != "-")
 		buf += " - " + item->fluff;
-	if (detail)
-		buf += "\n" + PrintStats(item->stats);
+	if (type)
+		buf += "\n" + PrintStats(item->stats, type);
 	return buf;
 }
 
@@ -146,37 +157,39 @@ std::string Game::PrintUnit(std::string arguments, int index) {
 	std::stringstream ss;
 	ss << arguments;
 	ss >> arguments >> arg2;
-	bool detail = arg2 != "";
+	char detail = arg2 != "";
 	index = index >= 0 ? index : curPlayer;
 	Unit* unit = &units.at(index);
 	if (arguments == "stats") {
-		return "Name: " + unit->name + "\n" + PrintStats(unit->stats);
+		return "Name: " + unit->name + "\n" + PrintStats(unit->stats, 'u');
 	}
 	std::string buf = "";
 	if (arguments == "items") {
+		detail = detail ? 'i' : 0;
 		for (unsigned int i = 0; i < sizeof(unit->inventory)/sizeof(unit->inventory[0]); i++) {
-			if (i > 0)
+			if (i > 0 && (unit->inventory[i].first > 0 || !detail))
 				buf += "\n";
 			if (unit->inventory[i].first > 0) {
 				Item* item = &Resources::items.at(unit->inventory[i].second);
 				if (!detail || item->name == arg2)
 					buf += '('+std::to_string(unit->inventory[i].first) + ") " + PrintItem(item, detail);
 			}
-			else
+			else if(!detail)
 				buf += "Empty slot";
 		}
 		return buf;
 	}
 	if (arguments == "equipment") {
+		detail = detail ? 'e' : 0;
 		for (unsigned int i = 0; i < sizeof(unit->equipment)/sizeof(unit->equipment[0]); i++) {
-			if (i > 0)
+			if (i > 0 && (unit->equipment[i] >= 0 || !detail))
 				buf += "\n";
 			if (unit->equipment[i] >= 0) {
 				Item* item = &Resources::items.at(unit->equipment[i]);
 				if (!detail || item->name == arg2)
 					buf += PrintItem(item, detail);
 			}
-			else
+			else if(!detail)
 				buf += "Empty slot";
 		}
 		return buf;

@@ -18,8 +18,8 @@ private:
 	unsigned int players = 0;
 	std::string LookTile(std::string arguments = "");
 	bool Move(std::string arguments = "", unsigned int index = 0);
-	std::string PrintStats(Stats stats);
-	std::string PrintItem(Item* item, bool detail = false);
+	std::string PrintStats(Stats stats, char type);
+	std::string PrintItem(Item* item, char type = 0);
 	std::string PrintTile(Location loc);
 	std::string PrintUnit(std::string arguments = "", int index = -1);
 };
