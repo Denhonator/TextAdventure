@@ -49,5 +49,6 @@ struct Unit {
 	Stats stats{ 20,20,20,20,20,20 };
 	Location loc{ 0,0,0 };
 	char type = 'p';
-	std::vector<unsigned int> inventory;
+	int equipment[6];
+	std::pair<unsigned int, int> inventory[6];
 };

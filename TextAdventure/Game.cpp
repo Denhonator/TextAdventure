@@ -154,29 +154,30 @@ std::string Game::PrintUnit(std::string arguments, int index) {
 	}
 	std::string buf = "";
 	if (arguments == "items") {
-		for (unsigned int i = 0; i < unit->inventory.size(); i++) {
-			Item* item = &Resources::items.at(unit->inventory.at(i));
-			if (item->type == "consume" && (!detail||item->name==arg2)) {
-				if (buf != "")
-					buf += "\n";
-				buf += PrintItem(item,detail);
+		for (unsigned int i = 0; i < sizeof(unit->inventory)/sizeof(unit->inventory[0]); i++) {
+			if (i > 0)
+				buf += "\n";
+			if (unit->inventory[i].first > 0) {
+				Item* item = &Resources::items.at(unit->inventory[i].second);
+				if (!detail || item->name == arg2)
+					buf += '('+std::to_string(unit->inventory[i].first) + ") " + PrintItem(item, detail);
 			}
+			else
+				buf += "Empty slot";
 		}
 		return buf;
 	}
 	if (arguments == "equipment") {
-		std::vector<std::string> toFind = {"feet","legs","torso","hands","head","accessory"};
-		for (unsigned int i = 0; i < unit->inventory.size(); i++) {
-			Item* item = &Resources::items.at(unit->inventory.at(i));
-			std::vector<std::string>::iterator iter = std::find(toFind.begin(), toFind.end(), item->type);
-			if (iter!=toFind.end()) {
-				toFind.erase(iter);
-				if (!detail || item->name == arg2) {
-					if (buf != "")
-						buf += "\n";
-					buf += PrintItem(item,detail);
-				}
+		for (unsigned int i = 0; i < sizeof(unit->equipment)/sizeof(unit->equipment[0]); i++) {
+			if (i > 0)
+				buf += "\n";
+			if (unit->equipment[i] >= 0) {
+				Item* item = &Resources::items.at(unit->equipment[i]);
+				if (!detail || item->name == arg2)
+					buf += PrintItem(item, detail);
 			}
+			else
+				buf += "Empty slot";
 		}
 		return buf;
 	}

@@ -1,5 +1,8 @@
 #include "Resources.h"
 #define StatStream st.hp>>st.mp>>st.strength>>st.magic>>st.agility>>st.defense
+#define EquipmentStream u.equipment[0] >> u.equipment[1] >> u.equipment[2] >> u.equipment[3] >> u.equipment[4] >> u.equipment[5]
+#define InventoryStream u.inventory[0].first >> u.inventory[0].second >> u.inventory[1].first >> u.inventory[1].second >> u.inventory[2].first >> u.inventory[2].second \
+>> u.inventory[3].first >> u.inventory[3].second >> u.inventory[4].first >> u.inventory[4].second >> u.inventory[5].first >> u.inventory[5].second
 
 std::vector<Unit> Resources::units;
 std::vector<Area> Resources::areas;
@@ -13,10 +16,7 @@ void Resources::LoadUnits()
 	Stats st;
 	file.open("Resources/units.txt");
 	if (file) {
-		while (file >> u.name >> StatStream >> u.loc.x >> u.loc.y >> u.loc.area >> u.type) {
-			int item;
-			while (file >> item)
-				u.inventory.push_back(item);
+		while (file >> u.name >> StatStream >> u.loc.x >> u.loc.y >> u.loc.area >> u.type >> EquipmentStream >> InventoryStream) {
 			u.stats = st;
 			units.push_back(u);
 		}

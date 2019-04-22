@@ -1,7 +1,1 @@
-Bare_feet - feet 0 0 0 0 0 0 -1
-Bare_legs - legs 0 0 0 0 0 0 -1
-Bare_torso - torso 0 0 0 0 0 0 -1
-Bare_hands - hands 0 0 0 0 0 0 -1
-Bare_head - head 0 0 0 0 0 0 -1
-No_accessory - accessory 0 0 0 0 0 0 -1
 Potion Bright_red_liquid._Looks_healthy. consume 10 0 0 0 0 0 40
