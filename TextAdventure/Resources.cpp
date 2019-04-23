@@ -97,6 +97,16 @@ Item* Resources::GetItem(std::string name, std::string rarity, std::string type,
 	return nullptr;
 }
 
+Unit* Resources::GetUnit(std::string name)
+{
+	for (unsigned int i = 0; i < units.size(); i++) {
+		if (units.at(i).name == name) {
+			return &units.at(i);
+		}
+	}
+	return nullptr;
+}
+
 Area Resources::CreateArea(std::string name) {
 	Area a;
 	a.name = name;

@@ -13,6 +13,7 @@ public:
 	static void LoadTiles();
 	static void LoadItems();
 	static Item* GetItem(std::string name = "", std::string rarity = "", std::string type = "", bool randomize = true);
+	static Unit* GetUnit(std::string name);
 private:
 	static Unit CreatePlayer(std::string name);
 	static Area CreateArea(std::string name);

@@ -7,8 +7,8 @@ Game::Game()
 	Resources::LoadItems();
 	Resources::LoadUnits();
 	areas = Resources::areas;
-	AddUnit(0, 'p', Location{ 0,0,0 },"player1");
-	AddUnit(0, 'e', Location{ 1,0,0 },"enemy");
+	AddUnit("unit", 'p', Location{ 0,0,0 },"player1");
+	AddUnit("unit", 'e', Location{ 1,0,0 },"enemy");
 }
 
 Game::~Game()
@@ -33,6 +33,10 @@ std::string Game::ProcessCommand(std::string input, int player)
 		input = "player";
 		arg = "equipment " + arg;
 	}
+	if (input == "stats") {
+		input = "player";
+		arg = "stats";
+	}
 	if (input == "player")
 		return PrintUnit(arg);
 	if (input == "look")
@@ -49,12 +53,15 @@ std::string Game::ProcessCommand(std::string input, int player)
 	return "Invalid command";
 }
 
-void Game::AddUnit(unsigned int index, char type, Location loc, std::string name)
+void Game::AddUnit(std::string name, char type, Location loc, std::string newname)
 {
-	Unit u = Resources::units.at(index);
+	Unit* uptr = Resources::GetUnit(name);
+	if (uptr == nullptr)
+		return;
+	Unit u = *uptr;
 	u.type = type;
-	if (name != "")
-		u.name = name;
+	if (newname != "")
+		u.name = newname;
 	if (u.type == 'p') {
 		units.insert(units.begin() + players, u);
 		AddUnitTo(loc, players);
@@ -267,21 +274,22 @@ std::string Game::PrintUnit(std::string arguments) {
 	return "Arguments: stats, items, equipment (+name for details)";
 }
 
-std::string Game::PrintTile(Location loc) {
-	Tile* tile;
+Tile* Game::GetTile(Location loc)
+{
 	Area a = areas.at(loc.area);
-	bool found = false;
 	if (loc.x > 9 || loc.x < 0 || loc.y>9 || loc.y < 0)
-		tile = &Resources::tiles.at(a.defaultTile);
-	else {
-		tile = &Resources::tiles.at(a.tiles[loc.x + loc.y * 10]);
-		found = true;
-	}
+		return &Resources::tiles.at(a.defaultTile);
+	else
+		return &Resources::tiles.at(a.tiles[loc.x + loc.y * 10]);
+}
+
+std::string Game::PrintTile(Location loc) {
+	Tile* defaultTile = &Resources::tiles.at(areas.at(loc.area).defaultTile);
+	Tile* tile = GetTile(loc);
 	std::string s = "";
-	if (tile->fluff.size() > 1) {
+	if (tile->fluff.size() > 1)
 		s = tile->fluff;
-	}
-	if (found && a.seenTiles[loc.x+loc.y*10]) {
+	if (tile->fluff!=defaultTile->fluff && areas.at(loc.area).seenTiles[loc.x+loc.y*10]) {
 		bool foundUnit = false;
 		for (unsigned int i = 0; i < units.size(); i++) {
 			if (i!=curPlayer && units.at(i).loc == loc) {
@@ -295,8 +303,20 @@ std::string Game::PrintTile(Location loc) {
 	else if (tile->walkable) {
 		s += "\nYou do not know what you will find here.";
 	}
-	if(!tile->walkable) {
-		s += "\nYou can not go this way.";
+	if (tile->walkable) {
+		std::string movedir = "";
+		if (loc.x < 9 && GetTile(Location{ loc.x + 1,loc.y,loc.area })->walkable)
+			movedir += "east, ";
+		if (loc.x > 0 && GetTile(Location{ loc.x - 1,loc.y,loc.area })->walkable)
+			movedir += "west, ";
+		if (loc.y < 9 && GetTile(Location{ loc.x,loc.y + 1,loc.area })->walkable)
+			movedir += "south, ";
+		if (loc.y > 0 && GetTile(Location{ loc.x,loc.y - 1,loc.area })->walkable)
+			movedir += "north, ";
+		if (movedir.size() > 0)
+			s += "\nFrom here you can move " + movedir.substr(0, movedir.size() - 2);
 	}
+	else
+		s += "\nYou can not go this way.";
 	return s;
 }
