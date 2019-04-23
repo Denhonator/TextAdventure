@@ -18,6 +18,8 @@ void Resources::LoadUnits()
 	if (file) {
 		while (file >> u.name >> StatStream >> u.loc.x >> u.loc.y >> u.loc.area >> EquipmentStream >> InventoryStream) {
 			for (unsigned int i = 0; i < sizeof(u.equipment) / sizeof(u.equipment[0]); i++) {
+				if (u.equipment[i].size() == 1)
+					u.equipment[i] == "";
 				if (u.equipment[i].size()>1 && GetItem(u.equipment[i],"","equipment") == nullptr) {
 					Item* item = GetItem("", u.equipment[i], "equipment");
 					if (item != nullptr)
@@ -75,11 +77,17 @@ void Resources::LoadItems()
 		std::cout << "Failed to read Resources/items.txt" << std::endl;
 }
 
-Item* Resources::GetItem(std::string name, std::string rarity, std::string type)
+Item* Resources::GetItem(std::string name, std::string rarity, std::string type, bool randomize)
 {
+	if (name.size() < 2)
+		name = "";
+	if (rarity.size() < 2)
+		rarity = "";
+	if (type.size() < 2)
+		type = "";
 	std::vector<Item*> viable;
 	for (unsigned int i = 0; i < items.size(); i++) {
-		if ((name == "" || items.at(i).name == name) && (rarity == "" || items.at(i).rarity == rarity) && (type == "" || items.at(i).type == type)) {
+		if (((name == "" && randomize) || items.at(i).name == name) && (rarity == "" || items.at(i).rarity == rarity) && (type == "" || items.at(i).type == type)) {
 			viable.push_back(&items.at(i));
 		}
 	}
