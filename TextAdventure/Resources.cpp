@@ -5,7 +5,6 @@
 >> u.inventory[3].first >> u.inventory[3].second >> u.inventory[4].first >> u.inventory[4].second >> u.inventory[5].first >> u.inventory[5].second
 
 std::vector<Unit> Resources::units;
-std::vector<Area> Resources::areas;
 std::vector<Tile> Resources::tiles;
 std::vector<Item> Resources::items;
 
@@ -16,7 +15,8 @@ void Resources::LoadUnits()
 	Stats st;
 	file.open("Resources/units.txt");
 	if (file) {
-		while (file >> u.name >> StatStream >> u.loc.x >> u.loc.y >> u.loc.area >> EquipmentStream >> InventoryStream) {
+		while (file >> u.name >> StatStream >> EquipmentStream >> InventoryStream) {
+			u.type = 1;
 			for (unsigned int i = 0; i < sizeof(u.equipment) / sizeof(u.equipment[0]); i++) {
 				if (u.equipment[i].size() == 1)
 					u.equipment[i] == "";
@@ -41,18 +41,19 @@ void Resources::LoadUnits()
 		std::cout << "Failed to read Resources/units.txt" << std::endl;
 }
 
-void Resources::LoadAreas()
-{
-	areas.push_back(CreateArea("test"));
-}
-
 void Resources::LoadTiles()
 {
 	std::ifstream file;
 	Tile t;
+	std::string u[6];
 	file.open("Resources/tiles.txt");
 	if (file) {
-		while (file >> t.fluff >> t.walkable) {
+		if (file >> t.fluff >> t.type) {
+			std::string unitName = "";
+			while (file >> unitName) {
+				t.units.push_back(GetUnit(unitName));
+				t.units.back().type = t.type;
+			}
 			std::replace(t.fluff.begin(), t.fluff.end(), '_', ' ');
 			tiles.push_back(t);
 		}
@@ -65,7 +66,7 @@ void Resources::LoadItems()
 {
 	std::ifstream file;
 	Item i;
-	Stats st, st2;
+	Stats st;
 	file.open("Resources/items.txt");
 	if (file) {
 		while (file >> i.name >> i.fluff >> i.type >> i.rarity >> StatStream >> i.value) {
@@ -97,25 +98,14 @@ Item* Resources::GetItem(std::string name, std::string rarity, std::string type,
 	return nullptr;
 }
 
-Unit* Resources::GetUnit(std::string name)
+Unit Resources::GetUnit(std::string name)
 {
 	for (unsigned int i = 0; i < units.size(); i++) {
 		if (units.at(i).name == name) {
-			return &units.at(i);
+			return units.at(i);
 		}
 	}
-	return nullptr;
-}
-
-Area Resources::CreateArea(std::string name) {
-	Area a;
-	a.name = name;
-	for (unsigned int i = 0; i < AreaSize; i++) {
-		a.tiles[i] = 1;
-		a.seenTiles[i] = false;
-	}
-	a.defaultTile = 0;
-	return a;
+	return Unit();
 }
 
 Unit Resources::CreatePlayer(std::string name) {

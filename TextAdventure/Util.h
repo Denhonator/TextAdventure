@@ -7,13 +7,7 @@
 #include <random>
 #include <time.h>
 
-constexpr auto AreaSize = 100;
-constexpr auto ItemIndex = 13;
-constexpr auto StatIndex = 5;
-#define tstr std::to_string
-
 struct Location;
-struct Area;
 struct Unit;
 
 struct Stats {
@@ -27,30 +21,15 @@ struct Item {
 };
 
 struct Tile {
-	std::string fluff;
-	bool walkable = true;
-};
-
-struct Location {
-	int x, y;
-	unsigned int area;
-	bool operator==(Location a) {
-		return a.x == x && a.y == y && a.area == area;
-	}
-};
-
-struct Area {
-	std::string name;
-	unsigned int defaultTile{ 0 };
-	unsigned int tiles[AreaSize];
-	bool seenTiles[AreaSize];
+	std::string fluff = "";
+	char type = 'a';
+	std::vector<Unit> units;
 };
 
 struct Unit {
-	std::string name;
-	Stats stats{ 20,20,20,20,20,20 };
-	Location loc{ 0,0,0 };
-	char type = 'p';
+	std::string name = "";
+	Stats stats{ 0,0,0,0,0,0 };
+	char type = 0;
 	std::string equipment[6];
 	std::pair<unsigned int, std::string> inventory[6];
 };
