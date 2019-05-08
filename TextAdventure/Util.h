@@ -12,6 +12,10 @@ struct Unit;
 
 struct Stats {
 	int hp, mp, strength, magic, agility, defense;
+	Stats operator+(const Stats& s) const
+	{
+		return Stats{ hp + s.hp,mp + s.mp,strength + s.strength,magic + s.magic,agility + s.agility,defense + s.defense };
+	}
 };
 
 struct Item {

@@ -41,9 +41,10 @@ std::string Game::ProcessCommand(std::string input, int player)
 		return GetItem(arg);
 	if (input == "equip")
 		return GetEquipment(arg);
-	if (input == "look") {
+	if (input == "look")
 		return PrintTile(arg);
-	}
+	if (input == "attack")
+		return Attack(arg);
 	return "Invalid command";
 }
 
@@ -57,6 +58,18 @@ void Game::AddPlayer(std::string name, std::string newname)
 		units.insert(units.begin() + players, u);
 		players++;
 	}
+}
+
+Stats Game::GetStats(Unit u)
+{
+	Stats st = u.stats;
+	for (unsigned int i = 0; i < sizeof(u.equipment) / sizeof(u.equipment[0]); i++) {
+		Item* item = Resources::GetItem(u.equipment[i], "", "equipment", false);
+		if (item != nullptr) {
+			st = st + item->stats;
+		}
+	}
+	return st;
 }
 
 std::string Game::GetItem(std::string arguments)
@@ -109,6 +122,45 @@ std::string Game::GetEquipment(std::string arguments)
 	return "Item not found";
 }
 
+std::string Game::Attack(std::string arguments)
+{
+	std::string buf = "";
+	unsigned int target = 0;
+	std::stringstream ss;
+	ss << arguments;
+	ss >> target >> arguments;
+	target--;
+	if (currentTile.units.size() > target && currentTile.units.at(target).stats.hp > 0) {
+		Unit* enemy = &currentTile.units.at(target);
+		Stats st = GetStats(units.at(curPlayer));
+		Stats est = GetStats(currentTile.units.at(target));
+		buf += units.at(curPlayer).name + " attacking " + enemy->name +"\n";
+		int acc = st.agility - est.agility;
+		int damage = std::max(0, st.strength - est.defense);
+		if (rand() % 20 + acc > 9) {
+			enemy->stats.hp = std::max(0, enemy->stats.hp - damage);
+			buf += "Hit! Dealt " + std::to_string(damage) + " damage!";
+			if (enemy->stats.hp <= 0)
+				return buf;
+		}
+		else
+			buf += "Missed!";
+		buf += "\n" + enemy->name + " attacking " + units.at(curPlayer).name + "\n";
+		acc = est.agility - st.agility;
+		if (rand() % 20 + acc > 9) {
+			damage = std::max(0, est.strength - st.defense);
+			units.at(curPlayer).stats.hp = std::max(0, units.at(curPlayer).stats.hp - damage);
+			buf += "Hit! Dealt " + std::to_string(damage) + " damage!";
+		}
+		else
+			buf += "Missed!";
+		return buf;
+	}
+	else {
+		return "Invalid target";
+	}
+}
+
 std::string Game::PrintStats(Stats stats, char type)
 {
 	std::string hp = std::to_string(stats.hp) + " HP";
@@ -153,7 +205,7 @@ std::string Game::PrintUnit(Unit u, std::string arguments) {
 	ss >> arguments >> arg2;
 	bool detail = arg2 != "";
 	if (arguments == "stats") {
-		return "Name: " + u.name + "\n" + PrintStats(u.stats, 'p');
+		return "Name: " + u.name + "\n" + PrintStats(GetStats(u), 'p');
 	}
 	std::string buf = "";
 	if (arguments == "items") {
@@ -203,7 +255,7 @@ std::string Game::PrintTile(std::string arguments)
 	for (unsigned int i = 0; i < currentTile.units.size(); i++) {
 		if (buf == "")
 			buf = "\nYou see:";
-		buf += "\n(" + std::to_string(i+1) + ") " + currentTile.units.at(i).name;
+		buf += "\n" + currentTile.units.at(i).name;
 	}
 	return currentTile.fluff + buf;
 }
