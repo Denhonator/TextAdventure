@@ -16,12 +16,9 @@ private:
 	unsigned int progress = 0;
 	Tile currentTile;
 	std::vector<Unit> units;
-	Stats GetStats(Unit u);
 	std::string GetItem(std::string arguments = "");
-	std::string GetEquipment(std::string arguments = "");
-	std::string Attack(std::string arguments = "");
 	std::string PrintStats(Stats stats, char type);
-	std::string PrintItem(Item* item, char type = 0);
+	std::string PrintItem(std::string name, bool detail);
 	std::string PrintUnit(Unit u, std::string arguments = "");
 	std::string PrintTile(std::string arguments = "");
 };

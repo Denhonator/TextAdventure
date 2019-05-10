@@ -27,10 +27,6 @@ std::string Game::ProcessCommand(std::string input, int player)
 		input = "player";
 		arg = "items " + arg;
 	}
-	if (input == "equipment") {
-		input = "player";
-		arg = "equipment " + arg;
-	}
 	if (input == "stats") {
 		input = "player";
 		arg = "stats";
@@ -39,12 +35,8 @@ std::string Game::ProcessCommand(std::string input, int player)
 		return PrintUnit(units.at(curPlayer), arg);
 	if (input == "item")
 		return GetItem(arg);
-	if (input == "equip")
-		return GetEquipment(arg);
 	if (input == "look")
 		return PrintTile(arg);
-	if (input == "attack")
-		return Attack(arg);
 	return "Invalid command";
 }
 
@@ -60,105 +52,17 @@ void Game::AddPlayer(std::string name, std::string newname)
 	}
 }
 
-Stats Game::GetStats(Unit u)
-{
-	Stats st = u.stats;
-	for (unsigned int i = 0; i < sizeof(u.equipment) / sizeof(u.equipment[0]); i++) {
-		Item* item = Resources::GetItem(u.equipment[i], "", "equipment", false);
-		if (item != nullptr) {
-			st = st + item->stats;
-		}
-	}
-	return st;
-}
-
 std::string Game::GetItem(std::string arguments)
 {
-	std::string name = "", rarity = "", type = "";
-	int slot = -1, count = -1;
+	std::string name = "";
+	int count = -1;
 	std::stringstream ss;
 	ss << arguments;
-	ss >> name >> count >> slot >> rarity >> type;
-	slot--;
-	if (count < 0 || slot < 0)
-		return "Arguments: name count slot (1-6) (+rarity type)";
-	Item* item = Resources::GetItem(name, rarity, type);
-	if (item != nullptr) {
-		if (item->name == units.at(curPlayer).inventory[slot].second)
-			units.at(curPlayer).inventory[slot].first += count;
-		else {
-			units.at(curPlayer).inventory[slot].first = count;
-			units.at(curPlayer).inventory[slot].second = item->name;
-		}
-		return PrintUnit(units.at(curPlayer), "items");
-	}
-	if (name == "remove") {
-		count = std::min(count, (int)units.at(curPlayer).inventory[slot].first);
-		units.at(curPlayer).inventory[slot].first -= count;
-		return PrintUnit(units.at(curPlayer), "items");
-	}
-	return "Item not found";
-}
-
-std::string Game::GetEquipment(std::string arguments)
-{
-	std::string name = "", rarity = "", type = "";
-	int slot = -1;
-	std::stringstream ss;
-	ss << arguments;
-	ss >> name >> slot >> rarity >> type;
-	slot--;
-	if (slot < 0)
-		return "Arguments: name slot (1-6) (+rarity type)";
-	Item * item = Resources::GetItem(name, rarity, type);
-	if (item != nullptr) {
-		units.at(curPlayer).equipment[slot] = item->name;
-		return PrintUnit(units.at(curPlayer), "equipment");
-	}
-	if (name == "remove") {
-		units.at(curPlayer).equipment[slot] = "";
-		return PrintUnit(units.at(curPlayer), "equipment");
-	}
-	return "Item not found";
-}
-
-std::string Game::Attack(std::string arguments)
-{
-	std::string buf = "";
-	unsigned int target = 0;
-	std::stringstream ss;
-	ss << arguments;
-	ss >> target >> arguments;
-	target--;
-	if (currentTile.units.size() > target && currentTile.units.at(target).stats.hp > 0) {
-		Unit* enemy = &currentTile.units.at(target);
-		Stats st = GetStats(units.at(curPlayer));
-		Stats est = GetStats(currentTile.units.at(target));
-		buf += units.at(curPlayer).name + " attacking " + enemy->name +"\n";
-		int acc = st.agility - est.agility;
-		int damage = std::max(0, st.strength - est.defense);
-		if (rand() % 20 + acc > 9) {
-			enemy->stats.hp = std::max(0, enemy->stats.hp - damage);
-			buf += "Hit! Dealt " + std::to_string(damage) + " damage!";
-			if (enemy->stats.hp <= 0)
-				return buf;
-		}
-		else
-			buf += "Missed!";
-		buf += "\n" + enemy->name + " attacking " + units.at(curPlayer).name + "\n";
-		acc = est.agility - st.agility;
-		if (rand() % 20 + acc > 9) {
-			damage = std::max(0, est.strength - st.defense);
-			units.at(curPlayer).stats.hp = std::max(0, units.at(curPlayer).stats.hp - damage);
-			buf += "Hit! Dealt " + std::to_string(damage) + " damage!";
-		}
-		else
-			buf += "Missed!";
-		return buf;
-	}
-	else {
-		return "Invalid target";
-	}
+	ss >> name >> count;
+	if (count < 0)
+		return "Arguments: name count";
+	units.at(curPlayer).inventory[name] = count;
+	return "Item(s) added";
 }
 
 std::string Game::PrintStats(Stats stats, char type)
@@ -187,15 +91,14 @@ std::string Game::PrintStats(Stats stats, char type)
 	return "Unable to print stats of unit";
 }
 
-std::string Game::PrintItem(Item* item, char type)
+std::string Game::PrintItem(std::string name, bool detail)
 {
-	std::string buf = "";
-	buf += item->name;
-	if (item->fluff != "-")
-		buf += " - " + item->fluff;
-	if (type)
-		buf += "\n" + PrintStats(item->stats, type);
-	return buf;
+	Item* item = Resources::GetItem(name,"","",false);
+	if (item == nullptr)
+		return name + " (not defined)";
+	if (item->fluff.size()>1)
+		name += " - " + item->fluff;
+	return name;
 }
 
 std::string Game::PrintUnit(Unit u, std::string arguments) {
@@ -205,44 +108,16 @@ std::string Game::PrintUnit(Unit u, std::string arguments) {
 	ss >> arguments >> arg2;
 	bool detail = arg2 != "";
 	if (arguments == "stats") {
-		return "Name: " + u.name + "\n" + PrintStats(GetStats(u), 'p');
+		return "Name: " + u.name + "\n" + PrintStats(u.stats, 'p');
 	}
 	std::string buf = "";
 	if (arguments == "items") {
-		for (unsigned int i = 0; i < sizeof(u.inventory)/sizeof(u.inventory[0]); i++) {
-			if (u.inventory[i].first > 0) {
-				Item* item = Resources::GetItem(u.inventory[i].second, "", "use", false);
-				if (item == nullptr)
-					buf += "\n(" + std::to_string(u.inventory[i].first) + ") " + u.inventory[i].second + " (Not found)";
-				else if (!detail || item->name == arg2) {
-					buf += "\n(" + std::to_string(u.inventory[i].first) + ") " + PrintItem(item, detail ? item->type[0] : 0);
-					if (detail)
-						break;
-				}
-			}
-			else if(!detail)
-				buf += "\nEmpty slot";
+		for (std::map<std::string, unsigned int>::iterator iter = u.inventory.begin(); iter != u.inventory.end();++iter) {
+			buf += "\n(" + std::to_string(iter->second) + ") " + PrintItem(iter->first, detail);
 		}
 		return buf.substr(1);	//Remove first linebreak
 	}
-	if (arguments == "equipment") {
-		for (unsigned int i = 0; i < sizeof(u.equipment)/sizeof(u.equipment[0]); i++) {
-			Item* item = Resources::GetItem(u.equipment[i], "", "equipment", false);
-			if (item == nullptr) {
-				if(u.equipment[i].size()>1)
-					buf += "\n"+u.equipment[i] + " (Not found)";
-				else if(!detail)
-					buf += "\nEmpty slot";
-			}
-			else if (!detail || item->name == arg2) {
-				buf += "\n"+PrintItem(item, detail ? item->type[0] : 0);
-				if (detail)
-					break;
-			}
-		}
-		return buf.substr(1);	//Remove first linebreak
-	}
-	return "Arguments: stats, items, equipment (+name for details)";
+	return "Arguments: stats, items (+name for details)";
 }
 
 std::string Game::PrintTile(std::string arguments)

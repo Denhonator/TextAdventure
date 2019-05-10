@@ -1,8 +1,4 @@
 #include "Resources.h"
-#define StatStream st.hp>>st.mp>>st.strength>>st.magic>>st.agility>>st.defense
-#define EquipmentStream u.equipment[0] >> u.equipment[1] >> u.equipment[2] >> u.equipment[3] >> u.equipment[4] >> u.equipment[5]
-#define InventoryStream u.inventory[0].first >> u.inventory[0].second >> u.inventory[1].first >> u.inventory[1].second >> u.inventory[2].first >> u.inventory[2].second \
->> u.inventory[3].first >> u.inventory[3].second >> u.inventory[4].first >> u.inventory[4].second >> u.inventory[5].first >> u.inventory[5].second
 
 std::vector<Unit> Resources::units;
 std::vector<Tile> Resources::tiles;
@@ -13,26 +9,18 @@ void Resources::LoadUnits()
 	std::ifstream file;
 	Unit u;
 	Stats st;
+	std::string it;
+	unsigned int count;
 	file.open("Resources/units.txt");
 	if (file) {
-		while (file >> u.name >> StatStream >> EquipmentStream >> InventoryStream) {
+		if (file >> u.name >> st.hp >> st.mp >> st.strength >> st.magic >> st.agility >> st.defense) {
+			while (file >> it >> count) {
+				if(GetItem(it)!=nullptr)
+					u.inventory[it] = count;
+				else if (GetItem("", it) != nullptr)
+					u.inventory[GetItem("", it)->name] = count;
+			}
 			u.type = 1;
-			for (unsigned int i = 0; i < sizeof(u.equipment) / sizeof(u.equipment[0]); i++) {
-				if (u.equipment[i].size() == 1)
-					u.equipment[i] == "";
-				if (u.equipment[i].size()>1 && GetItem(u.equipment[i],"","equipment") == nullptr) {
-					Item* item = GetItem("", u.equipment[i], "equipment");
-					if (item != nullptr)
-						u.equipment[i] = item->name;
-				}
-			}
-			for (unsigned int i = 0; i < sizeof(u.inventory) / sizeof(u.inventory[0]); i++) {
-				if (u.inventory[i].first > 0 && GetItem(u.inventory[i].second) == nullptr) {
-					Item* item = GetItem("", u.inventory[i].second, "use");
-					if (item != nullptr)
-						u.inventory[i].second = item->name;
-				}
-			}
 			u.stats = st;
 			units.push_back(u);
 		}
@@ -66,11 +54,9 @@ void Resources::LoadItems()
 {
 	std::ifstream file;
 	Item i;
-	Stats st;
 	file.open("Resources/items.txt");
 	if (file) {
-		while (file >> i.name >> i.fluff >> i.type >> i.rarity >> StatStream >> i.value) {
-			i.stats = st;
+		while (file >> i.name >> i.fluff >> i.type >> i.rarity >> i.value >> i.stats.physical >> i.stats.fire >> i.stats.ice >> i.stats.lightning >> i.stats.neutral) {
 			items.push_back(i);
 		}
 	}
