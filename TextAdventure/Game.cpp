@@ -4,8 +4,6 @@ Game::Game()
 {
 	Resources::LoadItems();
 	Resources::LoadUnits();
-	Resources::LoadTiles();
-	currentTile = Resources::tiles.at(0);
 	AddPlayer("Human","player1");
 }
 
@@ -16,39 +14,34 @@ Game::~Game()
 std::string Game::ProcessCommand(std::string input, int player)
 {
 	curPlayer = player;
-	while (input[input.size() - 1] == ' ')
-		input = input.substr(0, input.size() - 1);
-	std::string arg = "";
-	if (input.find(" ") != std::string::npos) {
-		arg = input.substr(input.find(" ")+1);
-		input = input.substr(0, input.find(" "));
-	}
-	if (input == "items") {
-		input = "player";
-		arg = "items " + arg;
-	}
-	if (input == "stats") {
-		input = "player";
-		arg = "stats";
-	}
-	if (input == "player")
-		return PrintUnit(units.at(curPlayer), arg);
-	if (input == "item")
-		return GetItem(arg);
-	if (input == "look")
-		return PrintTile(arg);
+	if (input == "items")
+		return PrintUnit(units.at(curPlayer), input);
+	if (input == "stats")
+		return PrintUnit(units.at(curPlayer), input);
+	if (input == "move")
+		return Encounter(input);
 	return "Invalid command";
 }
 
 void Game::AddPlayer(std::string name, std::string newname)
 {
 	Unit u = Resources::GetUnit(name);
-	if (u.type) {
-		u.type = 'p';
-		if (newname != "")
-			u.name = newname;
-		units.insert(units.begin() + players, u);
-		players++;
+	if (newname != "")
+		u.name = newname;
+	units.insert(units.begin() + players, u);
+	players++;
+}
+
+std::string Game::Encounter(std::string arguments)
+{
+	if (arguments == "move") {
+		if (currentEnc.objective != "enemy" || currentEnc.stats.hp <= 0) {
+			progress++;
+			currentEnc = Resources::GetEncounter();
+			return currentEnc.intro;
+		}
+		else
+			return "Cannot move on, you are in combat!";
 	}
 }
 
@@ -118,19 +111,4 @@ std::string Game::PrintUnit(Unit u, std::string arguments) {
 		return buf.substr(1);	//Remove first linebreak
 	}
 	return "Arguments: stats, items (+name for details)";
-}
-
-std::string Game::PrintTile(std::string arguments)
-{
-	unsigned int index = arguments != "" ? std::stoi(arguments) : 0;
-	std::string buf = "";
-	if (index > 0 && currentTile.units.size()>=index) {
-		return PrintUnit(currentTile.units.at(index - 1),"stats");
-	}
-	for (unsigned int i = 0; i < currentTile.units.size(); i++) {
-		if (buf == "")
-			buf = "\nYou see:";
-		buf += "\n" + currentTile.units.at(i).name;
-	}
-	return currentTile.fluff + buf;
 }

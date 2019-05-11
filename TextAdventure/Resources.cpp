@@ -1,7 +1,6 @@
 #include "Resources.h"
 
 std::vector<Unit> Resources::units;
-std::vector<Tile> Resources::tiles;
 std::vector<Item> Resources::items;
 
 void Resources::LoadUnits()
@@ -20,34 +19,12 @@ void Resources::LoadUnits()
 				else if (GetItem("", it) != nullptr)
 					u.inventory[GetItem("", it)->name] = count;
 			}
-			u.type = 1;
 			u.stats = st;
 			units.push_back(u);
 		}
 	}
 	else
 		std::cout << "Failed to read Resources/units.txt" << std::endl;
-}
-
-void Resources::LoadTiles()
-{
-	std::ifstream file;
-	Tile t;
-	std::string u[6];
-	file.open("Resources/tiles.txt");
-	if (file) {
-		if (file >> t.fluff >> t.type) {
-			std::string unitName = "";
-			while (file >> unitName) {
-				t.units.push_back(GetUnit(unitName));
-				t.units.back().type = t.type;
-			}
-			std::replace(t.fluff.begin(), t.fluff.end(), '_', ' ');
-			tiles.push_back(t);
-		}
-	}
-	else
-		std::cout << "Failed to read Resources/tiles.txt" << std::endl;
 }
 
 void Resources::LoadItems()
@@ -94,6 +71,40 @@ Unit Resources::GetUnit(std::string name)
 	return Unit();
 }
 
+Encounter Resources::GetEncounter(std::string type)
+{
+	Encounter enc;
+	enc.objective = type;
+	if (type == "enemy") {
+		enc.stats.hp = rand() % 20 + 1;
+		enc.stats.mp = rand() % (20 - enc.stats.hp) + 1;
+		enc.stats.strength = rand() % (20 - enc.stats.mp) + 1;
+		enc.stats.magic = rand() % (20 - enc.stats.strength) + 1;
+		enc.stats.agility = rand() % (20 - enc.stats.magic) + 1;
+		enc.stats.defense = rand() % (20 - enc.stats.agility) + 1;
+		if (enc.stats.strength > enc.stats.magic) {
+			enc.attack.physical = 1;
+		}
+		else {
+			switch (rand() % 3) {
+			case 0:
+				enc.attack.fire = 1;
+				enc.resist.fire = 0;
+				break;
+			case 1:
+				enc.attack.ice = 1;
+				enc.resist.ice = 0;
+				break;
+			case 2:
+				enc.attack.lightning = 1;
+				enc.resist.lightning = 0;
+				break;
+			}
+		}
+	}
+	return enc;
+}
+
 Unit Resources::CreatePlayer(std::string name) {
 	Unit u;
 	u.name = name;
@@ -103,6 +114,5 @@ Unit Resources::CreatePlayer(std::string name) {
 	u.stats.magic = 20;
 	u.stats.agility = 20;
 	u.stats.defense = 20;
-	u.type = 'p';
 	return u;
 }

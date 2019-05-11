@@ -8,9 +8,6 @@
 #include <time.h>
 #include <map>
 
-struct Location;
-struct Unit;
-
 struct Stats {
 	int hp, mp, strength, magic, agility, defense;
 	Stats operator+(const Stats& s) const {
@@ -19,7 +16,7 @@ struct Stats {
 };
 
 struct Attribute {
-	int physical, fire, ice, lightning, neutral;
+	float physical, fire, ice, lightning, neutral;
 	Attribute operator+(const Attribute& a) const {
 		return Attribute{ physical + a.physical,fire + a.fire,ice + a.ice,lightning + a.lightning,neutral + a.neutral };
 	}
@@ -31,21 +28,18 @@ struct Item {
 	int value = 0;
 };
 
-struct Tile {
-	std::string fluff = "";
-	char type = 'a';
-	std::vector<Unit> units;
-};
-
 struct Unit {
 	std::string name = "";
 	Stats stats{ 0,0,0,0,0,0 };
-	char type = 0;
 	std::map<std::string, unsigned int> inventory;
 };
 
 struct Encounter {
-	std::string objective = "";
+	std::string objective = "enemy";
+	std::string intro = "You encountered an enemy!";
+	std::string win = "You defeated the enemy!";
+	std::string lose = "You lost the fight.";
+	std::string reward = "common";
 	Stats stats{ 0,0,0,0,0,0 };
 	Attribute resist{ 1,1,1,1,1 };
 	Attribute attack{ 0,0,0,0,0 };
