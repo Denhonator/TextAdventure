@@ -1,1 +1,1 @@
-Human 20 20 20 20 20 10 common 1
+Human 12 12 12 12 12 8 common 1

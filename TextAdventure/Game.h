@@ -16,7 +16,7 @@ private:
 	unsigned int progress = 0;
 	Encounter currentEnc;
 	std::vector<Unit> units;
-	std::string Encounter(std::string arguments);
+	std::string Encounter(std::string arg1, std::string arg2);
 	std::string GetItem(std::string arguments = "");
 	std::string PrintStats(Stats stats, char type);
 	std::string PrintItem(std::string name, bool detail);

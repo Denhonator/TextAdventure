@@ -12,7 +12,7 @@ void Resources::LoadUnits()
 	unsigned int count;
 	file.open("Resources/units.txt");
 	if (file) {
-		if (file >> u.name >> st.hp >> st.mp >> st.strength >> st.magic >> st.agility >> st.defense) {
+		while (file >> u.name >> st.hp >> st.mp >> st.strength >> st.magic >> st.agility >> st.defense) {
 			while (file >> it >> count) {
 				if(GetItem(it)!=nullptr)
 					u.inventory[it] = count;

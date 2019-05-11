@@ -13,13 +13,17 @@ Game::~Game()
 
 std::string Game::ProcessCommand(std::string input, int player)
 {
+	std::stringstream ss;
+	std::string arg;
+	ss << input;
+	ss >> input >> arg;
 	curPlayer = player;
 	if (input == "items")
 		return PrintUnit(units.at(curPlayer), input);
 	if (input == "stats")
 		return PrintUnit(units.at(curPlayer), input);
-	if (input == "move")
-		return Encounter(input);
+	if (input == "move" || input == "fight")
+		return Encounter(input, arg);
 	return "Invalid command";
 }
 
@@ -32,9 +36,11 @@ void Game::AddPlayer(std::string name, std::string newname)
 	players++;
 }
 
-std::string Game::Encounter(std::string arguments)
+std::string Game::Encounter(std::string arg1, std::string arg2)
 {
-	if (arguments == "move") {
+	std::string buf = "";
+	int damage, mdamage, hpStart;
+	if (arg1 == "move") {
 		if (currentEnc.objective != "enemy" || currentEnc.stats.hp <= 0) {
 			progress++;
 			currentEnc = Resources::GetEncounter();
@@ -42,6 +48,50 @@ std::string Game::Encounter(std::string arguments)
 		}
 		else
 			return "Cannot move on, you are in combat!";
+	}
+	if (arg1 == "fight") {
+		if (currentEnc.objective == "enemy" && currentEnc.stats.hp > 0) {
+			Item* it = nullptr;
+			if (units.at(curPlayer).inventory.find(arg2) != units.at(curPlayer).inventory.end())
+				it = Resources::GetItem(arg2, "", "", false);
+			if (it == nullptr)
+				return "Invalid second argument. Should be an item you own.";
+			if (rand() % 20 > 9 - units.at(curPlayer).stats.agility + currentEnc.stats.agility) {
+				damage = std::max(0, units.at(curPlayer).stats.strength - currentEnc.stats.defense);
+				mdamage = std::max(0, units.at(curPlayer).stats.magic - currentEnc.stats.defense);
+				hpStart = currentEnc.stats.hp;
+				currentEnc.stats.hp -= it->stats.physical * damage * currentEnc.resist.physical;
+				currentEnc.stats.hp -= it->stats.fire * mdamage * currentEnc.resist.fire;
+				currentEnc.stats.hp -= it->stats.ice * mdamage * currentEnc.resist.ice;
+				currentEnc.stats.hp -= it->stats.lightning * mdamage * currentEnc.resist.lightning;
+				currentEnc.stats.hp -= it->stats.neutral * mdamage * currentEnc.resist.neutral;
+				buf += "Hit! Dealt " + std::to_string(hpStart - currentEnc.stats.hp) + " damage!";
+			}
+			else
+				buf += "Missed!";
+			if (currentEnc.stats.hp > 0) {
+				if (rand() % 20 > 9 + units.at(curPlayer).stats.agility - currentEnc.stats.agility) {
+					damage = std::max(0, currentEnc.stats.strength - units.at(curPlayer).stats.defense);
+					mdamage = std::max(0, currentEnc.stats.magic - units.at(curPlayer).stats.defense);
+					hpStart = units.at(curPlayer).stats.hp;
+					units.at(curPlayer).stats.hp -= currentEnc.attack.physical * damage;
+					units.at(curPlayer).stats.hp -= currentEnc.attack.fire * mdamage;
+					units.at(curPlayer).stats.hp -= currentEnc.attack.ice * mdamage;
+					units.at(curPlayer).stats.hp -= currentEnc.attack.lightning * mdamage;
+					units.at(curPlayer).stats.hp -= currentEnc.attack.neutral * mdamage;
+					buf += "\nEnemy hit! Dealt " + std::to_string(hpStart - units.at(curPlayer).stats.hp) + " damage!";
+				}
+				else
+					buf += "\nEnemy missed!";
+			}
+			else
+				buf += "\nEnemy has been defeated!";
+		}
+		else
+			buf += "No enemy to fight";
+		if (units.at(curPlayer).stats.hp <= 0)
+			buf += "\nYou have died.";
+		return buf;
 	}
 }
 
@@ -106,7 +156,8 @@ std::string Game::PrintUnit(Unit u, std::string arguments) {
 	std::string buf = "";
 	if (arguments == "items") {
 		for (std::map<std::string, unsigned int>::iterator iter = u.inventory.begin(); iter != u.inventory.end();++iter) {
-			buf += "\n(" + std::to_string(iter->second) + ") " + PrintItem(iter->first, detail);
+			if(!detail||iter->first==arg2)
+				buf += "\n(" + std::to_string(iter->second) + ") " + PrintItem(iter->first, detail);
 		}
 		return buf.substr(1);	//Remove first linebreak
 	}
