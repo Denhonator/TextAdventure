@@ -77,11 +77,11 @@ Encounter Resources::GetEncounter(std::string type)
 	enc.objective = type;
 	if (type == "enemy") {
 		enc.stats.hp = rand() % 20 + 1;
-		enc.stats.mp = rand() % (20 - enc.stats.hp) + 1;
-		enc.stats.strength = rand() % (20 - enc.stats.mp) + 1;
-		enc.stats.magic = rand() % (20 - enc.stats.strength) + 1;
-		enc.stats.agility = rand() % (20 - enc.stats.magic) + 1;
-		enc.stats.defense = rand() % (20 - enc.stats.agility) + 1;
+		enc.stats.mp = rand() % (30 - enc.stats.hp) + 1;
+		enc.stats.strength = rand() % (30 - enc.stats.mp) + 1;
+		enc.stats.magic = rand() % (30 - enc.stats.strength) + 1;
+		enc.stats.agility = rand() % (30 - enc.stats.magic) + 1;
+		enc.stats.defense = rand() % (30 - enc.stats.agility) + 1;
 		if (enc.stats.strength > enc.stats.magic) {
 			enc.attack.physical = 1;
 		}
